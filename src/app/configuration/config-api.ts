@@ -1,5 +1,5 @@
 export const API_YOUTUBE = {
-  cle: 'AIzaSyA2533wxuZSV_MzVRPWA4eqP3Z1KTE6c8I',
+  cle: 'VOTRE_CLE_API',
   baseUrl: 'https://www.googleapis.com/youtube/v3'
 };
 
