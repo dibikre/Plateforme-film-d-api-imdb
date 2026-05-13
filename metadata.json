@@ -1,0 +1,6 @@
+{
+  "name": "CinéSphère",
+  "description": "Une application web moderne pour découvrir des films, consulter les détails et regarder les bandes-annonces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
