@@ -1,14 +1,6 @@
-export const API_YOUTUBE = {
-  cle: 'VOTRE_CLE_API',
-  baseUrl: 'https://www.googleapis.com/youtube/v3'
-};
+export const IMDB_RECHERCHE = 'https://v3.sg.media-imdb.com/suggestion/';
 
-export const API_OMDB = {
-  cle: 'a96d9ced',
-  baseUrl: 'https://www.omdbapi.com/'
-};
-
-export const IMDB_RECHERCHE = 'https://v2.sg.media-imdb.com/suggestion/';
+export const ACTIVER_YOUTUBE = true; // Passer à false pour économiser l'API en développement
 
 export const MOTS_CLES_VOGUE: string[] = [
   'Dune',

@@ -1,13 +1,14 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FilmService } from '../services/film';
 import { CarteFilm } from './carte-film';
 import { MatIconModule } from '@angular/material/icon';
 import { ResultatImdb } from '../services/recherche-imdb';
-import { Location } from '@angular/common';
+import { Location, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-films',
-  imports: [CarteFilm, MatIconModule],
+  standalone: true,
+  imports: [CarteFilm, MatIconModule, CommonModule],
   template: `
     <div class="px-8 py-12">
       <header class="mb-12">
@@ -28,7 +29,7 @@ import { Location } from '@angular/common';
         </div>
       } @else {
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          @for (film of resultats(); track film.id) {
+          @for (film of resultatsAffiches(); track film.id) {
             <app-carte-film [film]="film"></app-carte-film>
           } @empty {
              <div class="col-span-full py-20 text-center text-zinc-500">
@@ -37,6 +38,41 @@ import { Location } from '@angular/common';
             </div>
           }
         </div>
+
+        <!-- Pagination -->
+        @if (resultatsTotaux().length > taillePage) {
+          <div class="flex items-center justify-center gap-4 mt-12 mb-20">
+            <button 
+              (click)="pagePrecedente()"
+              [disabled]="page() === 1"
+              class="p-4 rounded-full bg-zinc-900 border border-white/5 disabled:opacity-30 hover:bg-red-600 transition-colors group"
+            >
+              <mat-icon class="group-hover:scale-110 transition-transform">chevron_left</mat-icon>
+            </button>
+            
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-500 text-sm font-bold uppercase tracking-widest">Page</span>
+              <input 
+                type="number"
+                [value]="page()"
+                (change)="allerAPage($event)"
+                (keyup.enter)="allerAPage($event)"
+                min="1"
+                [max]="totalPages()"
+                class="w-16 text-center text-xl font-black text-white px-2 py-2 bg-zinc-900 rounded-lg border border-white/10 shadow-xl focus:border-red-600 focus:ring-0 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              >
+              <span class="text-zinc-500 text-sm font-bold uppercase tracking-widest">sur {{ totalPages() }}</span>
+            </div>
+
+            <button 
+              (click)="pageSuivante()"
+              [disabled]="page() === totalPages()"
+              class="p-4 rounded-full bg-zinc-900 border border-white/5 disabled:opacity-30 hover:bg-red-600 transition-colors group"
+            >
+              <mat-icon class="group-hover:scale-110 transition-transform">chevron_right</mat-icon>
+            </button>
+          </div>
+        }
       }
     </div>
   `
@@ -44,14 +80,54 @@ import { Location } from '@angular/common';
 export class FilmsComposant implements OnInit {
   private serviceFilm = inject(FilmService);
   private location = inject(Location);
-  resultats = signal<ResultatImdb[]>([]);
+  
+  resultatsTotaux = signal<ResultatImdb[]>([]);
   chargement = signal(true);
+  page = signal(1);
+  taillePage = 30;
+
+  resultatsAffiches = computed(() => {
+    const debut = (this.page() - 1) * this.taillePage;
+    return this.resultatsTotaux().slice(debut, debut + this.taillePage);
+  });
+
+  totalPages = computed(() => Math.ceil(this.resultatsTotaux().length / this.taillePage) || 1);
 
   ngOnInit() {
-    this.serviceFilm.rechercher('popular movies').subscribe(res => {
-      this.resultats.set(res);
-      this.chargement.set(false);
-    });
+    if (this.serviceFilm.filmsPopulaires().length === 0) {
+      this.serviceFilm.initialiser();
+    }
+    
+    // On s'abonne aux changements de filmsPopulaires
+    // Pour ne pas écraser le signal partagé, on copie les données
+    // Ou mieux on réagit au changement de valeur du signal de service
+    this.resultatsTotaux = this.serviceFilm.filmsPopulaires;
+    this.chargement = this.serviceFilm.chargement;
+  }
+
+  allerAPage(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const nouvellePage = parseInt(target.value, 10);
+    if (!isNaN(nouvellePage) && nouvellePage >= 1 && nouvellePage <= this.totalPages()) {
+      this.page.set(nouvellePage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      target.value = this.page().toString();
+    }
+  }
+
+  pageSuivante() {
+    if (this.page() < this.totalPages()) {
+      this.page.update(p => p + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  pagePrecedente() {
+    if (this.page() > 1) {
+      this.page.update(p => p - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   retour() {

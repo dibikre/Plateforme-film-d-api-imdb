@@ -72,6 +72,54 @@ app.get('/api/imdb-proxy/:prefix/:q', async (req, res) => {
 });
 
 /**
+ * Proxy OMDB to hide API Key
+ */
+app.get('/api/omdb-proxy', async (req, res) => {
+  try {
+    const key = req.headers['x-custom-key'] as string || process.env['OMDB_API_KEY'];
+    
+    if (!key) {
+      res.status(500).json({ error: 'OMDB_API_KEY not configured' });
+      return;
+    }
+
+    const query = new URLSearchParams(req.query as Record<string, string>);
+    
+    const omdbUrl = `https://www.omdbapi.com/?apikey=${key}&${query.toString()}`;
+    const response = await fetch(omdbUrl);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('OMDB Proxy Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+/**
+ * Proxy YouTube to hide API Key
+ */
+app.get('/api/youtube-proxy', async (req, res) => {
+  try {
+    const key = req.headers['x-custom-key'] as string || process.env['YOUTUBE_API_KEY'];
+
+    if (!key) {
+      res.status(500).json({ error: 'YOUTUBE_API_KEY not configured' });
+      return;
+    }
+
+    const query = new URLSearchParams(req.query as Record<string, string>);
+    
+    const ytUrl = `https://www.googleapis.com/youtube/v3/search?key=${key}&${query.toString()}`;
+    const response = await fetch(ytUrl);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('YouTube Proxy Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+/**
  * Example Express Rest API endpoints can be defined here.
  */
 

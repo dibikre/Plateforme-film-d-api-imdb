@@ -6,6 +6,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    path: 'acteur/:id',
+    renderMode: RenderMode.Server,
+  },
+  {
     path: 'lecture/:videoId',
     renderMode: RenderMode.Server,
   },

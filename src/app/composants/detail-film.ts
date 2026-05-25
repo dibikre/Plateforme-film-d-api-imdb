@@ -1,22 +1,38 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FilmService, DetailFilm } from '../services/film';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, Location } from '@angular/common';
+import { FavorisService } from '../services/favoris';
 
 @Component({
   selector: 'app-detail-film',
+  standalone: true,
   imports: [MatIconModule, CommonModule, RouterLink],
   template: `
     <div class="min-h-screen bg-[#0a0502] text-white">
       <!-- Bouton retour flottant -->
-      <button 
-        (click)="retour()" 
-        class="fixed left-8 top-8 z-50 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-red-600 transition-all shadow-2xl group"
-      >
-        <mat-icon class="group-hover:scale-110 transition-transform">arrow_back</mat-icon>
-      </button>
+      <div class="fixed left-8 top-8 z-50 flex items-center gap-4" style="margin-left: 64px;">
+        <button 
+          (click)="retour()" 
+          class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-red-600 transition-all shadow-2xl group"
+        >
+          <mat-icon class="group-hover:scale-110 transition-transform">arrow_back</mat-icon>
+        </button>
+
+        @if (film()) {
+          <button 
+            (click)="basculerFavori()" 
+            class="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-all shadow-2xl group"
+            [class.text-red-500]="favori()"
+          >
+            <mat-icon class="group-hover:scale-110 transition-transform text-xl">
+              {{ favori() ? 'favorite' : 'favorite_border' }}
+            </mat-icon>
+          </button>
+        }
+      </div>
 
       @if (chargement()) {
         <div class="flex flex-col items-center justify-center h-screen gap-4">
@@ -164,11 +180,56 @@ import { CommonModule, Location } from '@angular/common';
               </div>
 
               <div class="bg-red-600/10 rounded-3xl p-8 border border-red-600/20">
-                <p class="text-center font-medium text-red-500">Prêt pour la séance ?</p>
-                <button class="w-full mt-4 bg-red-600 text-white font-bold py-3 rounded-2xl hover:bg-red-700 transition-colors">
-                  Ajouter aux favoris
+                <p class="text-center font-medium" [class.text-red-500]="favori()">
+                  {{ favori() ? 'Fait partie de vos favoris' : 'Prêt pour la séance ?' }}
+                </p>
+                <button 
+                  (click)="basculerFavori()"
+                  class="w-full mt-4 font-bold py-3 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                  [class]="favori() ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-red-600 text-white hover:bg-red-700'"
+                >
+                  <mat-icon>{{ favori() ? 'favorite_border' : 'favorite' }}</mat-icon>
+                  {{ favori() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
                 </button>
               </div>
+
+              <!-- Recommandations verticales -->
+              @if (filmsRecommandes().length > 0) {
+                <div class="space-y-6 pt-4">
+                  <h3 class="text-sm font-black uppercase tracking-[0.2em] text-zinc-400 pl-2">Recommandations</h3>
+                  <div class="space-y-4">
+                    @for (rec of filmsRecommandes(); track rec.id) {
+                      <a 
+                        [routerLink]="['/film', rec.id]" 
+                        class="flex gap-4 p-3 rounded-2xl bg-zinc-900/40 hover:bg-zinc-900/80 border border-white/5 hover:border-red-600/30 transition-all duration-300 group cursor-pointer outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <div class="w-16 aspect-[2/3] rounded-lg bg-zinc-950 border border-white/5 overflow-hidden shrink-0 relative shadow-md">
+                          @if (rec.i?.imageUrl) {
+                            <img 
+                              [src]="rec.i?.imageUrl" 
+                              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                              [alt]="rec.l" 
+                              referrerpolicy="no-referrer"
+                            >
+                          } @else {
+                            <div class="w-full h-full flex items-center justify-center bg-zinc-900">
+                              <mat-icon class="text-zinc-700 text-sm">movie</mat-icon>
+                            </div>
+                          }
+                        </div>
+                        <div class="flex flex-col justify-center min-w-0 pr-2">
+                          <h4 class="text-sm font-bold tracking-tight line-clamp-2 uppercase group-hover:text-red-500 transition-colors">
+                            {{ rec.l }}
+                          </h4>
+                          <p class="text-[10px] text-zinc-500 mt-1 uppercase font-semibold">
+                            {{ rec.y || rec.yr || 'CinéMic' }} @if (rec.q) { • {{ rec.q }} }
+                          </p>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
             </div>
           </div>
         </div>
@@ -196,18 +257,40 @@ export class DetailFilmComponent implements OnInit {
   private serviceFilm = inject(FilmService);
   private sanitizer = inject(DomSanitizer);
   private location = inject(Location);
+  private favorisService = inject(FavorisService);
 
   film = signal<DetailFilm | null>(null);
   chargement = signal<boolean>(true);
   urlBandeAnnonce = signal<SafeResourceUrl | null>(null);
 
+  favori = computed(() => {
+    const f = this.film();
+    return f ? this.favorisService.estFilmFavori(f.id) : false;
+  });
+
+  filmsRecommandes = computed(() => {
+    const f = this.film();
+    const list = this.serviceFilm.filmsPopulaires();
+    if (list.length === 0) return [];
+    const filter = f ? list.filter(item => item.id !== f.id) : list;
+    return filter.slice(0, 5);
+  });
+
   ngOnInit() {
+    this.serviceFilm.initialiser();
     this.route.params.subscribe(params => {
       const id = params['id'];
       if (id) {
         this.chargerFilm(id);
       }
     });
+  }
+
+  basculerFavori() {
+    const f = this.film();
+    if (f) {
+      this.favorisService.basculerFilm(f);
+    }
   }
 
   retour() {
@@ -220,7 +303,7 @@ export class DetailFilmComponent implements OnInit {
       next: (f) => {
         this.film.set(f);
         if (f?.videoId) {
-          const url = `https://www.youtube.com/embed/${f.videoId}?autoplay=0&rel=0`;
+          const url = `https://www.youtube.com/embed/${f.videoId}?autoplay=1&mute=0&rel=0&enablejsapi=1`;
           this.urlBandeAnnonce.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
         }
         this.chargement.set(false);

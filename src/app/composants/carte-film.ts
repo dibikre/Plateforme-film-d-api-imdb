@@ -71,12 +71,12 @@ export class CarteFilm {
   private serviceFavoris = inject(FavorisService);
 
   estFavori(): boolean {
-    return this.serviceFavoris.estDansFavoris(this.film().id);
+    return this.serviceFavoris.estFilmFavori(this.film().id);
   }
 
   basculerFavori(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.serviceFavoris.basculerFavori(this.film());
+    this.serviceFavoris.basculerFilm(this.film());
   }
 }

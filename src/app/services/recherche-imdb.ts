@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { API_OMDB } from '../configuration/config-api';
+import { ConfigService } from './config';
 
 export interface VideoImdb {
   i?: { imageUrl: string; width: number; height: number };
@@ -49,8 +49,14 @@ interface DetailOmdb {
 @Injectable({ providedIn: 'root' })
 export class RechercheImdb {
   private readonly PROXY = '/api/imdb-proxy';
-  private readonly OMDB_URL = `${API_OMDB.baseUrl}?apikey=${API_OMDB.cle}`;
+  private readonly OMDB_PROXY = '/api/omdb-proxy';
   private http = inject(HttpClient);
+  private config = inject(ConfigService);
+
+  private getHeader() {
+    const key = this.config.omdbKey();
+    return key ? new HttpHeaders().set('x-custom-key', key) : undefined;
+  }
 
   rechercher(requete: string): Observable<ResultatImdb[]> {
     if (!requete.trim()) return of([]);
@@ -85,8 +91,8 @@ export class RechercheImdb {
   }
 
   private fallbackOmdbRecherche(requete: string): Observable<ResultatImdb[]> {
-    const url = `${this.OMDB_URL}&s=${encodeURIComponent(requete)}`;
-    return this.http.get<ReponseRechercheOmdb>(url).pipe(
+    const url = `${this.OMDB_PROXY}?s=${encodeURIComponent(requete)}`;
+    return this.http.get<ReponseRechercheOmdb>(url, { headers: this.getHeader() }).pipe(
       map(res => {
         if (res.Response === 'False') return [];
         return (res.Search || []).map((m) => ({
@@ -103,8 +109,8 @@ export class RechercheImdb {
   }
 
   private fallbackOmdbParId(id: string): Observable<ResultatImdb | null> {
-    const url = `${this.OMDB_URL}&i=${id}&plot=full`;
-    return this.http.get<DetailOmdb>(url).pipe(
+    const url = `${this.OMDB_PROXY}?i=${id}&plot=full`;
+    return this.http.get<DetailOmdb>(url, { headers: this.getHeader() }).pipe(
       map(m => {
         if (m.Response === 'False') return null;
         return {

@@ -4,9 +4,13 @@ import { ResultatsRecherche } from './composants/resultats-recherche';
 import { DetailFilmComponent } from './composants/detail-film';
 import { FilmsComposant } from './composants/films';
 import { SeriesComposant } from './composants/series';
+import { ActeursComposant } from './composants/acteurs';
+import { DetailActeurComposant } from './composants/detail-acteur';
 import { VideosComposant } from './composants/videos';
 import { FavorisComposant } from './composants/favoris';
 import { LectureVideoComposant } from './composants/lecture-video';
+import { Configuration } from './composants/configuration';
+import { ProfilComposant } from './composants/profil';
 
 export const routes: Routes = [
   { path: '', component: Accueil },
@@ -14,8 +18,12 @@ export const routes: Routes = [
   { path: 'film/:id', component: DetailFilmComponent },
   { path: 'films', component: FilmsComposant },
   { path: 'series', component: SeriesComposant },
+  { path: 'acteurs', component: ActeursComposant },
+  { path: 'acteur/:id', component: DetailActeurComposant },
   { path: 'videos', component: VideosComposant },
   { path: 'lecture/:videoId', component: LectureVideoComposant },
   { path: 'favoris', component: FavorisComposant },
+  { path: 'profil', component: ProfilComposant },
+  { path: 'configuration', component: Configuration },
   { path: '**', redirectTo: '' }
 ];

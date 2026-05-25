@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -6,13 +6,22 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-barre-navigation',
   imports: [RouterLink, RouterLinkActive, MatIconModule],
   template: `
-    <nav class="fixed left-0 top-0 bottom-0 w-16 md:w-20 lg:w-20 hover:lg:w-64 flex flex-col py-8 bg-black/95 backdrop-blur-xl border-r border-white/5 z-50 transition-all duration-300 overflow-hidden group">
-      <div class="mb-12 px-6 flex items-center gap-4">
-        <mat-icon class="text-red-600 scale-125 md:scale-150 shrink-0">movie_filter</mat-icon>
-        <span class="text-xl font-black tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">CINÉ<span class="text-red-600">SPHÈRE</span></span>
+    <nav 
+      class="fixed left-0 top-0 bottom-0 w-16 md:w-20 lg:w-20 hover:lg:w-64 flex flex-col py-8 bg-black/95 backdrop-blur-xl border-r border-white/5 z-50 transition-all duration-300 overflow-hidden group"
+      [class.menu-ouvert]="estOuvert()"
+    >
+      <div class="mb-12 px-4 flex items-center gap-4">
+        <img src="photo/mon_logo.png" class="w-10 h-10 md:w-12 md:h-12 shrink-0 object-cover rounded-full border border-white/10" alt="Logo">
+        <span class="text-xl font-black tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">CINÉ<span class="text-red-600">MIC</span></span>
       </div>
 
       <ul class="flex flex-col gap-2 flex-1 px-3 md:px-4">
+        <li class="lg:hidden">
+          <button (click)="basculerMenu()" class="nav-item w-full text-left bg-transparent border-0">
+            <mat-icon class="shrink-0 transition-transform duration-300" [class.rotate-180]="estOuvert()">chevron_right</mat-icon>
+            <span class="nav-label">Réduire</span>
+          </button>
+        </li>
         <li>
           <a routerLink="/recherche" routerLinkActive="active-link" class="nav-item">
             <mat-icon class="shrink-0">search</mat-icon>
@@ -38,6 +47,12 @@ import { MatIconModule } from '@angular/material/icon';
           </a>
         </li>
         <li>
+          <a routerLink="/acteurs" routerLinkActive="active-link" class="nav-item">
+            <mat-icon class="shrink-0">people</mat-icon>
+            <span class="nav-label">Acteurs</span>
+          </a>
+        </li>
+        <li>
           <a routerLink="/videos" routerLinkActive="active-link" class="nav-item">
             <mat-icon class="shrink-0">play_circle</mat-icon>
             <span class="nav-label">Vidéos et bandes</span>
@@ -49,13 +64,19 @@ import { MatIconModule } from '@angular/material/icon';
             <span class="nav-label">Ma liste de favoris</span>
           </a>
         </li>
+        <li>
+          <a routerLink="/profil" routerLinkActive="active-link" class="nav-item">
+            <img src="photo/profil.JPG" class="w-6 h-6 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all shrink-0" alt="Profil">
+            <span class="nav-label">Profil</span>
+          </a>
+        </li>
       </ul>
 
       <div class="mt-auto px-4">
-        <button class="nav-item w-full text-left">
+        <a routerLink="/configuration" routerLinkActive="active-link" class="nav-item w-full">
           <mat-icon class="shrink-0">settings</mat-icon>
           <span class="nav-label">Configurations</span>
-        </button>
+        </a>
       </div>
     </nav>
   `,
@@ -97,6 +118,26 @@ import { MatIconModule } from '@angular/material/icon';
     .active-link mat-icon {
       color: #e50914;
     }
+    .active-link img {
+      filter: grayscale(0) !important;
+      outline: 2px solid #e50914;
+      outline-offset: 1px;
+    }
+    .menu-ouvert {
+      width: 16rem !important;
+    }
+    .menu-ouvert .nav-label {
+      opacity: 1 !important;
+    }
+    .menu-ouvert span {
+      opacity: 1 !important;
+    }
   `]
 })
-export class BarreNavigation {}
+export class BarreNavigation {
+  estOuvert = signal(false);
+
+  basculerMenu() {
+    this.estOuvert.update(u => !u);
+  }
+}
