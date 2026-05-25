@@ -81,15 +81,11 @@ Pour une sécurité maximale et une flexibilité d'utilisation, CinéMic propose
    ```
 
 3. **Lancer le serveur de développement Angular :**
-   Vous pouvez démarrer l'environnement de développement local en utilisant la commande configurée :
+   Vous pouvez démarrer l'environnement de développement local et ouvrir automatiquement l'application dans votre navigateur par défaut en utilisant la commande Angular CLI officielle :
    ```bash
-   npm run dev
+   ng serve --open
    ```
-   Ou via l'Angular CLI standard :
-   ```bash
-   npm start
-   ```
-   L'application compilera et sera accessible localement dans votre navigateur sur `http://localhost:3000` (ou le port standard `http://localhost:4200` selon vos configurations locales).
+   L'application sera compilée et s'ouvrira localement dans votre navigateur, par défaut sur `http://localhost:4200` (ou sur un autre port configuré, comme `http://localhost:3000` selon l'environnement).
 
 4. **Vérifier le linter (Qualité du code Angular) :**
    ```bash
