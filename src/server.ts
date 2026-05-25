@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import {join} from 'node:path';
+import { YOUTUBE_API_KEY, OMDB_API_KEY } from './app/configuration/config-api';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -76,7 +77,7 @@ app.get('/api/imdb-proxy/:prefix/:q', async (req, res) => {
  */
 app.get('/api/omdb-proxy', async (req, res) => {
   try {
-    const key = req.headers['x-custom-key'] as string || process.env['OMDB_API_KEY'];
+    const key = req.headers['x-custom-key'] as string || OMDB_API_KEY;
     
     if (!key) {
       res.status(500).json({ error: 'OMDB_API_KEY not configured' });
@@ -100,7 +101,7 @@ app.get('/api/omdb-proxy', async (req, res) => {
  */
 app.get('/api/youtube-proxy', async (req, res) => {
   try {
-    const key = req.headers['x-custom-key'] as string || process.env['YOUTUBE_API_KEY'];
+    const key = req.headers['x-custom-key'] as string || YOUTUBE_API_KEY;
 
     if (!key) {
       res.status(500).json({ error: 'YOUTUBE_API_KEY not configured' });

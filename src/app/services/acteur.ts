@@ -20,17 +20,17 @@ export class ActeurService {
   
   // On liste tous les lots potentiels
   private readonly FICHIERS_LOTS = [
-    '/donnees/acteurs/lot1.csv',
-    '/donnees/acteurs/lot2.csv',
-    '/donnees/acteurs/lot3.csv',
-    '/donnees/acteurs/lot4.csv',
-    '/donnees/acteurs/lot5.csv',
-    '/donnees/acteurs/lot6.csv',
-    '/donnees/acteurs/lot7.csv',
-    '/donnees/acteurs/lot8.csv',
-    '/donnees/acteurs/lot9.csv',
-    '/donnees/acteurs/lot10.csv',
-    '/donnees/acteurs/lot11.csv'
+    '/donnees/acteurs/dataset_ateur_1.csv',
+    '/donnees/acteurs/dataset_ateur_2.csv',
+    '/donnees/acteurs/dataset_ateur_3.csv',
+    '/donnees/acteurs/dataset_ateur_4.csv',
+    '/donnees/acteurs/dataset_ateur_5.csv',
+    '/donnees/acteurs/dataset_ateur_6.csv',
+    '/donnees/acteurs/dataset_ateur_7.csv',
+    '/donnees/acteurs/dataset_ateur_8.csv',
+    '/donnees/acteurs/dataset_ateur_9.csv',
+    '/donnees/acteurs/dataset_ateur_10.csv',
+    '/donnees/acteurs/dataset_ateur_11.csv'
   ];
 
   /**
